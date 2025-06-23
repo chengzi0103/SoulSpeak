@@ -13,14 +13,11 @@ vad = webrtcvad.Vad(2)
 frame_duration = 30  # 每帧时长（毫秒）
 frame_size = int(16000 * frame_duration / 1000 * 2)  # 每帧字节数（16-bit 单声道）
 
-# 用于缓存音频帧
-frame_buffer = collections.deque(maxlen=10)
 
 def audio_callback(indata, frames, time_info, status):
     if status:
         print("Error:", status)
     frame = indata[:, 0].copy()
-    print(f"采集到音频帧，长度: {len(frame)}")
     try:
         if vad.is_speech(frame.tobytes(), 16000):
             if ws is not None:
@@ -33,7 +30,7 @@ def audio_callback(indata, frames, time_info, status):
 
 def record_audio():
     stream = sd.InputStream(callback=audio_callback, channels=1,
-                            samplerate=16000, dtype='int16', blocksize=480, device=5)
+                            samplerate=16000, dtype='int16', blocksize=480, device=3)
     stream.start()
     print("开始录音... 按 Ctrl+C 停止")
     try:

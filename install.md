@@ -13,3 +13,8 @@ pip3 install torch torchvision torchaudio
 
 pip3 install -U funasr
 
+
+
+pip install git+https://github.com/huggingface/transformers \
+            torch librosa websockets numpy
+accelerate 
