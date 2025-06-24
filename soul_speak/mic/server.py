@@ -8,70 +8,8 @@ import numpy as np
 from io import BytesIO
 
 from funasr import AutoModel
-from transformers import AutoProcessor, Qwen2AudioForConditionalGeneration
 
-# ----------- ASRStream 单例化加载 -------------
-print("🔄 Loading ASR model...")
-ASR_MODEL = AutoModel(
-    model="paraformer-zh-streaming",
-    model_revision="v2.0.4",
-    disable_update=True,
-    hub="hf"
-)
-print("✅ ASR model loaded.")
-
-class ASRStream:
-    def __init__(self):
-        self.model = ASR_MODEL
-        self.cache = {}
-        self.chunk_size = [0, 10, 5]
-        self.encoder_chunk_look_back = 4
-        self.decoder_chunk_look_back = 1
-
-    async def recognize(self, audio_chunk: bytes, is_final=False):
-        np_audio = np.frombuffer(audio_chunk, dtype=np.int16)
-        results = self.model.generate(
-            input=np_audio,
-            cache=self.cache,
-            is_final=is_final,
-            chunk_size=self.chunk_size,
-            encoder_chunk_look_back=self.encoder_chunk_look_back,
-            decoder_chunk_look_back=self.decoder_chunk_look_back
-        )
-        if not results:
-            return ""
-        rst = results[0]
-        if isinstance(rst, dict):
-            return rst.get("text", "")
-        return rst
-
-# ----------- Qwen2-Audio 模型加载 -------------
-print("🔄 Loading Qwen2-Audio model...")
-processor = AutoProcessor.from_pretrained(
-    "Qwen/Qwen2-Audio-7B-Instruct", trust_remote_code=True
-)
-qa_model = Qwen2AudioForConditionalGeneration.from_pretrained(
-    "Qwen/Qwen2-Audio-7B-Instruct",
-    trust_remote_code=True,
-    device_map="auto",
-    torch_dtype=torch.float16
-).eval()
-print("✅ Qwen2-Audio model loaded.")
-
-def analyze_with_qwen_and_context(audio_bytes: bytes, prompt: str) -> str:
-    """
-    直接把 PCM int16 bytes 转为 float waveform，不走 librosa.load。
-    """
-    # 1. 原始 PCM int16 -> float32 in [-1,1]
-    pcm = np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32) / 32768.0
-    # 2. 构造输入给 Qwen2-Audio
-    inputs = processor(text=prompt, audios=pcm, sampling_rate=processor.feature_extractor.sampling_rate, return_tensors="pt")
-    inputs = {k: v.to(qa_model.device) for k, v in inputs.items()}
-    with torch.no_grad():
-        out = qa_model.generate(**inputs, max_new_tokens=256)
-    return processor.batch_decode(
-        out[:, inputs["input_ids"].shape[-1]:]
-    )[0].strip()
+from stream_asr import ASRStream
 
 # ----------- 参数配置 -------------
 PUNCTUATION = ("。", "？", "！", ".", "?", "!")
@@ -127,17 +65,12 @@ async def handler(ws):
                 history.pop(0)
 
             prompt = "\n".join(history) + "\n请分析以上内容的情绪："
-
-            # SER via Qwen2-Audio
-            resp = analyze_with_qwen_and_context(data, prompt)
-            print(f"[DEBUG] Qwen response: {resp}")
-            await ws.send(resp)
+            print(prompt)
 
     async def silence_checker():
         while True:
             await asyncio.sleep(0.5)
             if time.time() - last_recv > SILENCE_THRESHOLD:
-                print("[DEBUG] silence triggered")
                 await recognize_and_send()
 
     async def periodic_checker():

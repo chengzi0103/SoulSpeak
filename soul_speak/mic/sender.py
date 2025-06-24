@@ -30,7 +30,7 @@ def audio_callback(indata, frames, time_info, status):
 
 def record_audio():
     stream = sd.InputStream(callback=audio_callback, channels=1,
-                            samplerate=16000, dtype='int16', blocksize=480, device=3)
+                            samplerate=16000, dtype='int16', blocksize=480)
     stream.start()
     print("开始录音... 按 Ctrl+C 停止")
     try:
