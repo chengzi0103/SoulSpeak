@@ -40,27 +40,28 @@ async def handler(ws):
 
             # ASR
             text = await asr.recognize(data, is_final=True)
-            print(f"[DEBUG] ASR returned: '{text}'")
+            await ws.send(text['text'])
+            print(f"[DEBUG] ASR returned: '{text['text']}'")
             if not text:
                 return
 
             # 累积并判断句子
-            text_buffer += text
-            is_sentence = any(text_buffer.endswith(p) for p in PUNCTUATION) \
-                          or len(text_buffer) >= MIN_SENT_LEN
-            if not is_sentence:
-                print(f"[DEBUG] Partial buffer (waiting): '{text_buffer}'")
-                return
-
-            # 完整一句
-            sentence = text_buffer
-            text_buffer = ""
-            history.append(sentence)
-            if len(history) > MAX_HISTORY:
-                history.pop(0)
-
-            prompt = "\n".join(history) + "\n请分析以上内容的情绪："
-            print(prompt)
+            # text_buffer += text['text']
+            # is_sentence = any(text_buffer.endswith(p) for p in PUNCTUATION) \
+            #               or len(text_buffer) >= MIN_SENT_LEN
+            # if not is_sentence:
+            #     print(f"[DEBUG] Partial buffer (waiting): '{text_buffer}'")
+            #     return
+            #
+            # # 完整一句
+            # sentence = text_buffer
+            # text_buffer = ""
+            # history.append(sentence)
+            # if len(history) > MAX_HISTORY:
+            #     history.pop(0)
+            #
+            # prompt = "\n".join(history) + "\n This is the content of the user's voice. Since it is recognized by ASR, there may be text errors. Please analyze the user"
+            # await ws.send(prompt)
 
     async def silence_checker():
         while True:
@@ -81,8 +82,12 @@ async def handler(ws):
     print("📡 Client connected")
     try:
         async for msg in ws:
-            audio_buffer.extend(msg)
-            last_recv = time.time()
+            if isinstance(msg, bytes):
+                audio_buffer.extend(msg)
+                last_recv = time.time()
+            elif isinstance(msg, str) and msg == "$$END$$":
+                print("[DEBUG] 收到音频段结束标志 $$END$$，开始识别")
+                await recognize_and_send()
     except websockets.ConnectionClosed:
         print("❎ Client disconnected")
         await recognize_and_send()

@@ -8,7 +8,6 @@ from omegaconf import OmegaConf
 def load_hydra_config(version_base=None, config_path=f"../../conf", config_name="config.yaml"):
     with initialize(version_base=version_base, config_path=config_path):
         cfg = compose(config_name=config_name, return_hydra_config=True)
-        # ✅ 正确设置 HydraConfig
         HydraConfig.instance().set_config(cfg)
     return cfg
 

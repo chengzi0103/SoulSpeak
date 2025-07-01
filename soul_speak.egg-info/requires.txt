@@ -34,3 +34,4 @@ websockets
 numpy
 scipy
 python-dotenv
+webrtcvad

@@ -47,6 +47,7 @@ Requires-Dist: websockets
 Requires-Dist: numpy
 Requires-Dist: scipy
 Requires-Dist: python-dotenv
+Requires-Dist: webrtcvad
 Dynamic: author
 Dynamic: author-email
 Dynamic: classifier
