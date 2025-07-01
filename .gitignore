@@ -1,0 +1,9 @@
+out/**
+local_cache/**
+data/**
+.env.secret
+./**/.env.secret
+./**/.db
+.env
+*.egg-info
+*.idea
