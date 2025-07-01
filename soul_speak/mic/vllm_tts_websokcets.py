@@ -1,9 +1,9 @@
-# # ✅ 与你原始代码保持一致，仅修改为 vLLM 推理模式
-
+#
 # import os
 # from starlette.websockets import WebSocketState
-
+# import json
 # import sys
+#
 # sys.path.append('third_party/Matcha-TTS')
 # import time
 # import torch
@@ -22,10 +22,10 @@
 # sys.path.append(COSYSPEECH_PATH)
 # sys.path.append(MATCHA_TTS_PATH)
 # sys.path.append(os.path.join(MATCHA_TTS_PATH, 'matcha'))
-
+#
 # from cosyvoice.utils.file_utils import load_wav
 # from cosyvoice.cli.cosyvoice import CosyVoice2
-
+#
 # # 全局参数
 # tts_model: CosyVoice2 = None
 # global_prompt = None
@@ -35,7 +35,7 @@
 #     "我可以回答各种问题,还能和你们聊天,分享我的见闻.最重要的是,"
 #     "我还是爆炸豆的好伙伴"
 # )
-
+#
 # # 生命周期管理
 # @contextlib.asynccontextmanager
 # async def lifespan(app: FastAPI):
@@ -65,57 +65,63 @@
 #         traceback.print_exc()
 #         print("="*50)
 #         sys.exit(1)
-
+#
 #     yield
-
+#
 #     print("[Shutdown] 正在释放资源...")
 #     del tts_model
 #     del global_prompt
 #     if torch.cuda.is_available():
 #         torch.cuda.empty_cache()
 #     print("[Shutdown] ✅ 资源已释放。")
-
-
+#
+#
 # # FastAPI 实例
 # app = FastAPI(lifespan=lifespan)
-
-
-# # WebSocket 推理端点
+#
+#
 # @app.websocket("/ws/synthesize")
 # async def websocket_endpoint(ws: WebSocket):
 #     await ws.accept()
 #     print(f"[WebSocket] 客户端 {ws.client.host}:{ws.client.port} 已连接。")
 #     try:
 #         while True:
-#             text = await ws.receive_text()
-#             if not text.strip():
-#                 continue
-
-#             print(f"[WebSocket] 收到文本: '{text[:30]}...'")
-
-#             # ✅ 推理部分保持不变，内部根据 load_vllm 自动使用 vLLM 加速
-#             stream_gen = tts_model.inference_zero_shot(
-#                 tts_text=text,
-#                 prompt_text=global_prompt_text,
-#                 prompt_speech_16k=global_prompt,
-#                 stream=True
-#             )
-
-#             full_audio_chunks = []
-
-#             for res in stream_gen:
-#                 chunk_tensor = res['tts_speech'].cpu().float()
-#                 if chunk_tensor.dim() == 1:
-#                     chunk_tensor = chunk_tensor.unsqueeze(0)
-#                 if chunk_tensor.shape[1] == 0:
+#             raw = await ws.receive_text()
+#             try:
+#                 data = json.loads(raw)
+#             except json.JSONDecodeError:
+#                 continue  # 忽略非法格式
+#
+#             event = data.get("event")
+#             if event == "text":
+#                 text = data.get("text", "").strip()
+#                 if not text:
 #                     continue
-#                 full_audio_chunks.append(chunk_tensor)
-
-#                 pcm16 = (chunk_tensor.numpy().flatten() * 32767).astype(np.int16)
-#                 await ws.send_bytes(pcm16.tobytes())
-
-#             await ws.send_text("END_OF_SPEECH")
-
+#
+#                 print(f"[WebSocket] 📝 收到合成请求文本：'{text[:30]}…'")
+#                 stream_gen = tts_model.inference_zero_shot(
+#                     tts_text=text,
+#                     prompt_text=global_prompt_text,
+#                     prompt_speech_16k=global_prompt,
+#                     stream=True
+#                 )
+#
+#                 for res in stream_gen:
+#                     chunk = res['tts_speech'].cpu().float()
+#                     if chunk.dim() == 1:
+#                         chunk = chunk.unsqueeze(0)
+#                     if chunk.shape[1] == 0:
+#                         continue
+#                     pcm16 = (chunk.numpy().flatten() * 32767).astype(np.int16)
+#                     await ws.send_bytes(pcm16.tobytes())
+#
+#             elif event == "end_of_speech":
+#                 print("[WebSocket] ⚡ 收到结束命令，发送 END_OF_SPEECH 标记")
+#                 await ws.send_text("END_OF_SPEECH")
+#
+#             else:
+#                 continue
+#
 #     except WebSocketDisconnect:
 #         print(f"[WebSocket] 客户端 {ws.client.host}:{ws.client.port} 已断开。")
 #     except Exception:
@@ -125,22 +131,19 @@
 #         if ws.client_state != WebSocketState.DISCONNECTED:
 #             await ws.close()
 #         print(f"[WebSocket] 连接 {ws.client.host}:{ws.client.port} 已关闭。")
-
-
+#
+#
 # # 启动服务
 # if __name__ == "__main__":
 #     print("启动 Uvicorn 服务器，监听 0.0.0.0:8000")
 #     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 
-
-
-# ✅ 与你原始代码保持一致，仅修改为 vLLM 推理模式
-
 import os
 from starlette.websockets import WebSocketState
 import json
 import sys
+
 sys.path.append('third_party/Matcha-TTS')
 import time
 import torch

@@ -1,0 +1,18 @@
+websocket:
+  host: ${gpu_server_ip}
+  port: 8766
+
+model_name: pretrained_models/CosyVoice2-0.5B
+vllm_enable: true
+sys_path:
+  - ${cosyspeech_path}/third_party/Matcha-TTS
+  - ${cosyspeech_path}/third_party/Matcha-TTS/matcha
+  - ${cosyspeech_path}
+REAL_SR: 24000
+
+audio_data:
+  - name: susu
+    audio_file_path: ${audio_path}/susu.wav
+    prompt: 爆炸豆家的智能电脑,虽然我只是一台电脑.但我可是超级智能的,我可以回答各种问题,还能和你们聊天,分享我的见闻.最重要的是,我还是爆炸豆的好伙伴
+
+voice_select: susu

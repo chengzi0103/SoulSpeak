@@ -1,0 +1,12 @@
+defaults:
+  - _self_
+  - asr: funasr
+  - tts: cosy_voice2
+  - llm: gpt
+  - globals
+  - secrets
+
+# 通用设置（如日志、设备等）
+log_level: INFO
+device: cuda
+

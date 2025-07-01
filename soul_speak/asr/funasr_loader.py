@@ -1,12 +1,14 @@
 
 from funasr import AutoModel
 import numpy as np
-import hydra
-from omegaconf import DictConfig
+
+from soul_speak.utils.hydra_config.init import conf
+
 
 class ASRStream:
     def __init__(self):
-        self.model = AutoModel(model=cfg.model_name, model_revision="v2.0.4",hub="hf",)
+
+        self.model = AutoModel(model=conf.asr.model_name, model_revision="v2.0.4",hub="hf",)
         self.cache = {}
         self.chunk_size = [0, 10, 5]
         self.encoder_chunk_look_back = 4

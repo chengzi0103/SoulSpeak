@@ -36,7 +36,7 @@ setup(
     include_package_data=True,
     keywords='soul_speak',
     packages=find_packages(where='soul_speak', include=['soul_speak', 'soul_speak.*']),
-    package_dir={'SoulSpeak': 'soul_speak'},
+    package_dir={'': '.'},
     test_suite='tests',
     tests_require=test_requirements,
     version='0.0.1',

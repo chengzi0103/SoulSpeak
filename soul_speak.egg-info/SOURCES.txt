@@ -1,0 +1,10 @@
+LICENSE
+README.rst
+setup.py
+soul_speak.egg-info/PKG-INFO
+soul_speak.egg-info/SOURCES.txt
+soul_speak.egg-info/dependency_links.txt
+soul_speak.egg-info/entry_points.txt
+soul_speak.egg-info/not-zip-safe
+soul_speak.egg-info/requires.txt
+soul_speak.egg-info/top_level.txt

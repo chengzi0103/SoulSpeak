@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="chengzi@10.100.1.111:22 password" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="chengzi@10.100.1.111:22 password (2)" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
     <option name="confirmBeforeUploading" value="false" />
     <serverData>
       <paths name="chengzi@10.100.1.111:22 password">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/chengzi/projects/pycharm-tmp" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="chengzi@10.100.1.111:22 password (2)">
         <serverdata>
           <mappings>
             <mapping deploy="/home/chengzi/projects/pycharm-tmp" local="$PROJECT_DIR$" />

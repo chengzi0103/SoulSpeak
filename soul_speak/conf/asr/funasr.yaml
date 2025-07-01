@@ -1,0 +1,10 @@
+name: funasr
+endpoint: http://${gpu_server_ip}:9000/asr
+language: zh
+model_name: paraformer-zh-streaming
+websocket:
+  host: ${gpu_server_ip}
+  port: 8765
+send_audio:
+  frame_duration: 30
+  samplerate: 16000

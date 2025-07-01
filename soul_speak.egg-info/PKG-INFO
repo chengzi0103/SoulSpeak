@@ -1,0 +1,69 @@
+Metadata-Version: 2.4
+Name: soul-speak
+Version: 0.0.1
+Summary: SoulSpeak is an emotionally driven AI companion framework that brings the voice of loved ones back into your life. By combining custom speech synthesis (TTS), large language models (LLMs), and memory-based dialogue systems, SoulSpeak offers a deeply personal, soothing voice experience
+Author: Cheng Chen
+Author-email: chenzi00103@gmail.com,
+Keywords: soul_speak
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 3.10
+Requires-Python: >=3.10
+License-File: LICENSE
+Requires-Dist: sphinx==8.1.3
+Requires-Dist: sphinx-rtd-theme==3.0.2
+Requires-Dist: pytest==8.3.5
+Requires-Dist: pytest-cov==6.0.0
+Requires-Dist: pyrootutils==1.0.4
+Requires-Dist: pre-commit==4.1.0
+Requires-Dist: twine==6.1.0
+Requires-Dist: wheel>=0.45.1
+Requires-Dist: coverage==7.6.12
+Requires-Dist: furo==2024.8.6
+Requires-Dist: myst-parser==4.0.1
+Requires-Dist: pytest-mock==3.14.0
+Requires-Dist: pendulum==3.0.0
+Requires-Dist: python-dotenv==1.0.1
+Requires-Dist: cookiecutter==2.6.0
+Requires-Dist: setuptools
+Requires-Dist: openpyxl==3.1.5
+Requires-Dist: attrs<26,>=25.1.0
+Requires-Dist: pathlib==1.0.1
+Requires-Dist: click
+Requires-Dist: prettytable
+Requires-Dist: websocket-client
+Requires-Dist: sounddevice
+Requires-Dist: webrtcvad
+Requires-Dist: PyAudio
+Requires-Dist: numpy
+Requires-Dist: openai
+Requires-Dist: funasr
+Requires-Dist: langchain_openai
+Requires-Dist: langchain
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: websockets
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: python-dotenv
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: keywords
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+
+
+=======
+History
+=======
+
+0.1.0 (2025-07-01)
+------------------
+
+* First release on PyPI.

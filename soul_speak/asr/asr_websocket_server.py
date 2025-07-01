@@ -3,8 +3,8 @@ import asyncio
 import websockets
 import time
 
-
-from stream_asr import ASRStream
+from soul_speak.asr.funasr_loader import ASRStream
+from soul_speak.utils.hydra_config.init import conf
 
 # ----------- 参数配置 -------------
 PUNCTUATION = ("。", "？", "！", ".", "?", "!")
@@ -89,7 +89,7 @@ async def handler(ws):
 
 async def main():
     print("🚀 Server starting on port 8765...")
-    async with websockets.serve(handler, "0.0.0.0", 8765):
+    async with websockets.serve(handler, "0.0.0.0", conf.asr.websocket.port):
         await asyncio.Future()
 
 if __name__ == "__main__":
