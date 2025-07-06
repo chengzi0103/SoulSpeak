@@ -30,26 +30,25 @@
 ## 🧱 3. System Architecture
 
 ```mermaid
-flowchart TB
-  subgraph Input Layer
-    MIC[🎙️ Microphone Input]
+  subgraph 输入层
+    MIC[🎙️ 麦克风输入]
   end
 
-  subgraph Edge Processing Layer
-    VAD[🧱 WebRTC VAD<br/>(Voice Activity Detection)]
-    ASR[🔠 FunASR<br/>(Speech Recognition)]
-    Emotion[💬 Emotion Module<br/>WIP]
-    MultiModal[👁️ Multimodal Input<br/>WIP]
+  subgraph 边缘处理层
+    VAD[🧱 WebRTC VAD<br/>（语音活动检测）]
+    ASR[🔠 FunASR<br/>（实时语音识别）]
+    Emotion[💬 情绪感知模块<br/>⚠️开发中]
+    MultiModal[👁️ 多模态输入模块<br/>⚠️开发中]
   end
 
-  subgraph AI Brain Layer
-    LLM[🧠 LangChain + Memory<br/>(Context + Proactivity)]
+  subgraph 智能中枢层
+    LLM[🧠 LangChain + Memory<br/>（上下文记忆 + 主动交互）]
   end
 
-  subgraph Output Layer
-    TTS[🔊 CosyVoice2<br/>(Text-to-Speech)]
-    Player[🎧 Audio Player]
-    Interrupt[⛔ Interruption Handler]
+  subgraph 表达输出层
+    TTS[🔊 CosyVoice2<br/>（语音合成）]
+    Player[🎧 播放器]
+    Interrupt[⛔ 播放打断机制]
   end
 
   MIC --> VAD --> ASR --> LLM --> TTS --> Player
