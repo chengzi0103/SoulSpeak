@@ -6,7 +6,7 @@ websocket:
   host: ${gpu_server_ip}
   port: 8765
 send_audio:
-  frame_duration: 30
+  frame_duration: 20
   samplerate: 16000
   vad_trigger_ratio: 0.9       # 触发语音开始的帧占比阈值
   vad_silence_timeout: 0.6     # 静音判定语音结束的时间阈值（秒）

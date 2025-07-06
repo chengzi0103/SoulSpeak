@@ -72,7 +72,6 @@ async def handler(ws):
     async def periodic_checker():
         while True:
             await asyncio.sleep(PERIODIC_INTERVAL)
-            print("[DEBUG] periodic triggered")
             await recognize_and_send()
 
     # 启动检测任务

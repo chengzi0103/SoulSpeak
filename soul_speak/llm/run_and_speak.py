@@ -1,4 +1,3 @@
-
 import asyncio
 import json
 import websockets
@@ -22,23 +21,27 @@ def setup_audio_stream():
     print(f"[Client] Audio device SR={sr}Hz, channels={ch}")
     return sr, ch
 
-async def tts_pipeline(user_input: str):
+async def tts_pipeline(user_input: str, interrupt_event: asyncio.Event = None):
+    """
+    接收用户指令并进行 TTS 合成。
+    如果 interrupt_event 被 set()，则在合成前或合成中立刻中断并退出。
+    """
+    # 1. 文本切句
     sentences = await generate_emilia_tagged(user_input)
     print("[LLM] Sentences:", sentences)
 
+    # 2. 准备播放流
     device_sr, channels = setup_audio_stream()
-
-    # 1) 打开唯一一次的 OutputStream
     stream = sd.OutputStream(
         samplerate=device_sr,
         channels=channels,
         dtype="float32",
-        blocksize=0  # use default
+        blocksize=0
     )
     stream.start()
 
     try:
-        # 2) 建立一次 WebSocket 连接
+        # 3. 建立到 TTS 服务的 WebSocket 连接
         async with websockets.connect(
             WS_URL,
             ping_interval=PING_INTERVAL,
@@ -46,40 +49,57 @@ async def tts_pipeline(user_input: str):
         ) as ws:
             await ws.ping()
 
-            # 对每一句，连续写入到同一个 stream
+            # 4. 逐句合成并播放
             for idx, sent in enumerate(sentences, 1):
+                # —— 合成前检查打断 —— 
+                if interrupt_event and interrupt_event.is_set():
+                    print("[TTS] Detected interrupt before sentence, exiting.")
+                    return
+
                 print(f"[Client] Synthesizing {idx}/{len(sentences)}: {sent[:30]}…")
-                # 发送合成请求
                 await ws.send(json.dumps({"event": "text", "text": sent}))
                 await ws.send(json.dumps({"event": "end_of_speech"}))
 
-                # 读取并写入音频数据，直到本句结束
+                # 5. 接收并播放音频
                 while True:
+                    # —— 播放中也要随时检查打断 —— 
+                    if interrupt_event and interrupt_event.is_set():
+                        print("[TTS] Detected interrupt during playback, aborting.")
+                        return
+
                     msg = await ws.recv()
+                    # 二进制帧是音频
                     if isinstance(msg, (bytes, bytearray)):
                         pcm16 = np.frombuffer(msg, dtype=np.int16)
                         pcm = pcm16.astype(np.float32) / 32767.0
+
                         # 重采样
                         if SERVER_SR != device_sr:
-                            pcm = signal.resample(pcm, int(len(pcm)*device_sr/SERVER_SR))
-                        # 扩声道
+                            pcm = signal.resample(pcm,
+                                int(len(pcm) * device_sr / SERVER_SR)
+                            )
+                        # 通道扩展
                         if channels == 2:
                             pcm = np.stack([pcm, pcm], axis=-1)
                         else:
-                            pcm = pcm.reshape(-1,1)
-                        # 直接写到流中，保持连续
+                            pcm = pcm.reshape(-1, 1)
+
                         stream.write(pcm)
                     else:
+                        # 文本消息：END_OF_SPEECH 表示本句结束
                         if msg == "END_OF_SPEECH":
                             break
-                        # 忽略其他消息
+                        # 其他文本忽略
 
     except Exception as e:
         print(f"[Error] {e}")
     finally:
-        # 3) 停止并关闭流
-        stream.stop()
-        stream.close()
+        # 确保流关闭
+        try:
+            stream.stop()
+            stream.close()
+        except:
+            pass
 
 async def main():
     load_dotenv()
@@ -88,7 +108,10 @@ async def main():
         text = input("输入文本（exit 退出）: ").strip()
         if text.lower() == 'exit':
             break
-        await tts_pipeline(text)
+
+        # 每次调用前都为打断创建新的 Event
+        interrupt_event = asyncio.Event()
+        await tts_pipeline(text, interrupt_event)
 
 if __name__ == "__main__":
     asyncio.run(main())

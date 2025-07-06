@@ -1,72 +1,120 @@
+# 🪐 SoulSpeak: The Empathetic LLM Voice Companion
 
-
-# SoulSpeak 灵语共鸣
-
-**SoulSpeak** is an emotionally driven AI companion framework that brings the voice of loved ones back into your life. By combining custom speech synthesis (TTS), large language models (LLMs), and memory-based dialogue systems, SoulSpeak offers a deeply personal, soothing voice experience.
-
-**SoulSpeak** 是一个具备情绪感知能力的 AI 语音共鸣框架，通过语音合成、语言模型与记忆系统，模拟出逝者或亲人的声音，为用户带来陪伴与安慰。
+> **“Not just an assistant, but a presence.”**
+> SoulSpeak is designed to be more than a voice assistant. It’s your AI companion — a memory-enabled, emotionally aware, proactive entity capable of humanlike conversations.
+> Inspired by the movie *Her*, we aim to make AI a real part of your life: someone who listens, senses, speaks, and understands you — emotionally.
 
 ---
 
-## 🌌 Project Vision 项目愿景
+## 📍 1. Project Vision
 
-We believe voice has soul. When we miss someone, it's often their voice we long for.  
-Through AI, SoulSpeak re-creates personalized voices based on user-provided data, and makes them speak in a deeply emotional, caring tone.
-
-我们相信，声音可以传达灵魂的温度。  
-SoulSpeak 希望通过 AI 技术，让声音成为灵魂沟通的桥梁，让想念不再孤单。
+**SoulSpeak** is a modular, real-time voice interaction system based on large language models. It combines audio understanding, contextual memory, emotion detection, and multi-modal interaction. Our ultimate goal is to develop an **LLM-powered human companion** — a personal, emotional entity that can **talk with you, sense your mood, and even initiate conversations with you** like a real human would.
 
 ---
 
-## 🎯 Core Features 核心功能
+## 🌟 2. Key Features
 
-- 🎤 **Voice Cloning from Audio Samples**  
-  Using 2-5 minutes of user-provided voice, SoulSpeak clones a high-fidelity, emotion-capable TTS model.
-
-- 🧠 **LLM-driven Conversation Agent**  
-  Customizable AI agents that simulate personality, memory, and tone in real-time dialogue.
-
-- 😢 **Emotion-aware Synthesis**  
-  TTS engine generates voice with sadness, joy, calm, and other emotions.
-
-- 🌐 **Cloud-based + Local UI**  
-  Supports cloud deployment (GPU) with local lightweight frontend access.
-
----
-
+| Feature                        | Description                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| 🧠 Contextual Memory           | Based on LangChain + Memory, enabling long-term memory and continuous conversations                     |
+| 🎤 Real-time Interruptions     | Users can interrupt the AI at any time by speaking, and the system will respond immediately             |
+| 🔁 WebSocket Architecture      | All modules communicate via WebSocket, allowing hot-swapping and scalable deployments                   |
+| 💬 Emotion Detection (WIP)     | Detect user emotion from speech (e.g., sadness, joy, anxiety) and adjust LLM response style accordingly |
+| 👁️ Multimodal Input (WIP)     | Integrate visual/audio context (camera, noise) to enhance emotional awareness and decision making       |
+| 🗣️ Optimized Chinese Pipeline | ASR: FunASR, TTS: CosyVoice2 – ensuring high-quality Chinese understanding and generation               |
+| 🧩 Modular Design              | Each component (ASR, VAD, TTS, LLM) can be independently swapped or upgraded                            |
+| 🤖 Proactive Dialogues         | LLM can initiate conversation based on user behavior/silence (requires emotion + multimodal support)    |
 
 ---
 
-## 💡 Use Cases 应用场景
+## 🧱 3. System Architecture
 
-- **Grief Companion / 悼念陪伴**  
-  Talk to a voice that reminds you of someone you love.
+```mermaid
+flowchart TB
+  subgraph Input Layer
+    MIC[🎙️ Microphone Input]
+  end
 
-- **Emotional AI Memories / 情感回忆 AI**  
-  Let the voice of the past bring you peace in the present.
+  subgraph Edge Processing Layer
+    VAD[🧱 WebRTC VAD<br/>(Voice Activity Detection)]
+    ASR[🔠 FunASR<br/>(Speech Recognition)]
+    Emotion[💬 Emotion Module<br/>WIP]
+    MultiModal[👁️ Multimodal Input<br/>WIP]
+  end
 
-- **Therapeutic Interfaces / 治愈型交互**  
-  Calm anxiety and loneliness through emotional speech agents.
+  subgraph AI Brain Layer
+    LLM[🧠 LangChain + Memory<br/>(Context + Proactivity)]
+  end
 
----
+  subgraph Output Layer
+    TTS[🔊 CosyVoice2<br/>(Text-to-Speech)]
+    Player[🎧 Audio Player]
+    Interrupt[⛔ Interruption Handler]
+  end
 
-## 🤝 Contribution 开源与贡献
+  MIC --> VAD --> ASR --> LLM --> TTS --> Player
+  VAD --> Interrupt --> Player
+  Interrupt --> TTS
 
-We welcome developers, artists, and emotional technologists to join us.
-
-我们欢迎开发者、声音设计师与 AI 心理学爱好者共同参与。
-
----
-
-## 📄 License
-
-MIT License
-
----
-
-## 📬 Contact 联系方式
-
-GitHub Issues / Discussions 欢迎在 Issues 留言交流
+  Emotion --> LLM
+  MultiModal --> LLM
 ```
 
+---
 
+## 🔍 4. Module Overview
+
+### ✅ Completed Modules
+
+| Module           | Technology         | Function                             |
+| ---------------- | ------------------ | ------------------------------------ |
+| 🎙️ MIC          | Audio stream       | Captures user speech                 |
+| 🧱 VAD           | WebRTC VAD         | Triggers when user speaks            |
+| 🔠 ASR           | FunASR             | High-accuracy Chinese ASR            |
+| 🧠 LLM           | LangChain + Memory | Humanlike dialog system with memory  |
+| 🔊 TTS           | CosyVoice2         | Natural Chinese voice synthesis      |
+| 🎧 Player        | Audio playback     | Outputs synthesized speech           |
+| ⛔ Interrupt      | WebRTC VAD + Hook  | Real-time playback interruption      |
+| 🌐 Communication | WebSocket only     | Enables async and distributed design |
+
+### ⚠️ Under Development
+
+| Module                   | Function                | Goal                      |
+| ------------------------ | ----------------------- | ------------------------- |
+| 💬 Emotion Module        | Detect emotional states | Adjust LLM response style |
+| 👁️ Multimodal Input     | Visual/audio context    | Situational awareness     |
+| 🤖 Active Dialogue Logic | LLM asks questions      | Lifelike companionship    |
+
+---
+
+## 🧪 5. Current Issues
+
+| Issue                     | Description                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------- |
+| 🔊 Over-sensitive VAD     | External sounds (e.g., coughing) during playback cause unwanted interruptions    |
+| 🧱 Unstable playback flow | Playback often ends prematurely due to false VAD triggers                        |
+| ⏱️ Rigid turn-taking      | Dialog lacks flexibility — LLM waits too long or doesn’t know when to speak next |
+
+---
+
+## 🚀 6. Roadmap & Suggestions
+
+| Topic                         | Suggestion                                                              |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| 🔧 VAD Tuning                 | Add energy threshold + minimum speech duration to reduce false triggers |
+| 💞 Emotional Response Engine  | Generate comforting language based on emotion detection                 |
+| 🧠 Long-Term Memory           | Integrate with VectorDB for user history & preferences                  |
+| 🤝 Proactive Interaction      | AI initiates dialog when user is silent or sad                          |
+| 🧠 Cross-modal Decision Logic | Combine audio/visual cues to choose AI behavior patterns                |
+
+---
+
+## 💡 Why This Project Matters
+
+> "We're building an LLM that feels like a human presence — one that listens, speaks, feels, and connects."
+
+SoulSpeak is not just an experiment. It is our vision for a future where **LLMs become emotionally resonant companions**, not just tools. We want to **give people someone to talk to, someone who remembers, someone who cares** — even if it's not human.
+
+This isn’t Alexa.
+This isn’t ChatGPT.
+This is **SoulSpeak**.

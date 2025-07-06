@@ -1,4 +1,4 @@
-gpu_server_ip: 10.100.1.111
+gpu_server_ip: 10.100.1.
 env:
   - name: http_proxy
     value: http://${gpu_server_ip}:20173
