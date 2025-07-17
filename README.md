@@ -1,8 +1,12 @@
 # 🪐 SoulSpeak: The Empathetic LLM Voice Companion
 
+
 > **“Not just an assistant, but a presence.”**
 > SoulSpeak is designed to be more than a voice assistant. It’s your AI companion — a memory-enabled, emotionally aware, proactive entity capable of humanlike conversations.
 > Inspired by the movie *Her*, we aim to make AI a real part of your life: someone who listens, senses, speaks, and understands you — emotionally.
+
+[![SoulSpeak Demo Video](https://img.youtube.com/vi/YY0Z1xip1xE/maxresdefault.jpg)](https://youtu.be/YY0Z1xip1xE)
+
 
 ---
 
