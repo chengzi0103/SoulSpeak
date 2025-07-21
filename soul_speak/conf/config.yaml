@@ -3,6 +3,7 @@ defaults:
   - asr: funasr
   - tts: cosy_voice2
   - llm: gpt
+  - mcp: firecrawl
   - globals
   - secrets
 

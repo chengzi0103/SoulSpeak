@@ -5,7 +5,7 @@ import sounddevice as sd
 import numpy as np
 from scipy import signal
 from dotenv import load_dotenv
-from soul_speak.llm.llm_tagged import generate_emilia_tagged
+from soul_speak.llm.llm_tagged import generate_emilia_tagged, shutdown_llm_system
 from soul_speak.utils.hydra_config.init import conf
 
 llm_conf = conf.llm

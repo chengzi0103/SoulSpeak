@@ -1,0 +1,36 @@
+mcp:
+  services:
+    firecrawl:
+      name: "firecrawl"
+      url: "http://43.157.44.96:4010/sse"
+      description: "Firecrawl MCP服务，用于网页抓取和内容提取"
+      type: "sse"
+      enabled: true
+      timeout: 30
+    
+    # 文件系统MCP（示例配置）
+    filesystem:
+      name: "filesystem"
+      url: "http://localhost:3000/sse"
+      description: "文件系统MCP服务，用于文件操作"
+      type: "sse"
+      enabled: false
+      timeout: 30
+    
+    # Git MCP（示例配置）
+    git:
+      name: "git"
+      url: "http://localhost:3001/sse"
+      description: "Git MCP服务，用于代码仓库操作"
+      type: "sse"
+      enabled: false
+      timeout: 30
+    
+    # 数据库MCP（示例配置）
+    database:
+      name: "database"
+      url: "http://localhost:3002/sse"
+      description: "数据库MCP服务，用于数据库查询"
+      type: "sse"
+      enabled: false
+      timeout: 30

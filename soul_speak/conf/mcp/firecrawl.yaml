@@ -1,0 +1,17 @@
+services:
+  firecrawl:
+    name: "firecrawl"
+    url: "http://43.157.44.96:4010/sse"
+    description: "Firecrawl MCP服务，用于网页抓取和内容提取"
+    type: "sse"
+    enabled: true
+    timeout: 30
+    
+    # 可以添加更多MCP服务配置
+    # example:
+    #   name: "example_mcp"
+    #   url: "http://example.com/sse"
+    #   description: "示例MCP服务"
+    #   type: "sse"
+    #   enabled: false
+    #   timeout: 30

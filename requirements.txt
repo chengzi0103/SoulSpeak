@@ -42,6 +42,9 @@ openai
 funasr
 langchain_openai
 langchain
+langchain-mcp-adapters
+langgraph
+
 # --------- server --------- #
 
 fastapi
