@@ -1,13 +1,20 @@
-gpu_server_ip: 10.100.1.
+gpu_server_ip: 10.100.1.115
 env:
   - name: http_proxy
     value: http://${gpu_server_ip}:20173
   - name: https_proxy
     value: http://${gpu_server_ip}:20173
   - name: COSYSPEECH_PATH
-    value: /home/chengzi/projects/github/CosyVoice
+    value: /home/chenzi/project/CosyVoice
   - name: OPENAI_API_KEY
     value: ${LLM_API_KEY}
 
-cosyspeech_path: /home/chengzi/projects/github/CosyVoice
+cosyspeech_path: /home/chenzi/project/CosyVoice
 audio_path: ${hydra:runtime.cwd}/audio
+
+mcp:
+  tools:
+    host: 127.0.0.1
+    bind_host: 0.0.0.0
+    port: 8822
+    allow_outside: true

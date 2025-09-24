@@ -28,6 +28,9 @@ openai
 funasr
 langchain_openai
 langchain
+langchain-mcp-adapters
+langgraph
+agno
 fastapi
 uvicorn
 websockets
@@ -35,3 +38,5 @@ numpy
 scipy
 python-dotenv
 webrtcvad
+silero-vad
+pysilero-vad

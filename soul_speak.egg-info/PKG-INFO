@@ -41,6 +41,9 @@ Requires-Dist: openai
 Requires-Dist: funasr
 Requires-Dist: langchain_openai
 Requires-Dist: langchain
+Requires-Dist: langchain-mcp-adapters
+Requires-Dist: langgraph
+Requires-Dist: agno
 Requires-Dist: fastapi
 Requires-Dist: uvicorn
 Requires-Dist: websockets
@@ -48,6 +51,8 @@ Requires-Dist: numpy
 Requires-Dist: scipy
 Requires-Dist: python-dotenv
 Requires-Dist: webrtcvad
+Requires-Dist: silero-vad
+Requires-Dist: pysilero-vad
 Dynamic: author
 Dynamic: author-email
 Dynamic: classifier

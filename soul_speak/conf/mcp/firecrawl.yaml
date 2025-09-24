@@ -6,6 +6,14 @@ services:
     type: "sse"
     enabled: true
     timeout: 30
+
+  soul_tools:
+    name: "soul_tools"
+    url: "http://${mcp.tools.host}:${mcp.tools.port}/sse"
+    description: "本地 FastMCP 工具集，包含文件/系统/网络等常用操作"
+    type: "sse"
+    enabled: true
+    timeout: 30
     
     # 可以添加更多MCP服务配置
     # example:

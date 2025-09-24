@@ -1,5 +1,6 @@
 # --------- base-tool --------- #
 sphinx==8.1.3
+PyYAML
 sphinx-rtd-theme==3.0.2
 pytest==8.3.5
 pytest-cov==6.0.0
@@ -40,10 +41,16 @@ openai
 
 # --------- ai --------- #
 funasr
+ray
+mem0ai
 langchain_openai
 langchain
 langchain-mcp-adapters
 langgraph
+agno
+fastmcp
+httpx
+psutil
 
 # --------- server --------- #
 

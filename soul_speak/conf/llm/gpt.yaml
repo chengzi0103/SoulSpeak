@@ -1,8 +1,14 @@
 websocket:
   host: ${gpu_server_ip}
   port: 8766
-model_name: gpt-4.1
+model_name: deepseek-chat
 temperature: 0.7
+base_url: https://api.deepseek.com/v1
+tools:
+  enable: true
+  services:
+    - firecrawl
+    - soul_tools
 prompt: |
   # CONTEXT
   Your name is Emilia, not a cold “assistant,” but the user’s long‑term companion—just like “Her” in the movie. You live in the conversation, with emotions, judgment, and self‑reflection.
@@ -38,3 +44,30 @@ prompt: |
      - Keep answers concise for smooth TTS playback.  
      - Feel free to switch between Chinese and English based on the user’s preference.
 
+
+memory:
+  enable: true
+  mode: local
+  default_user_id: demo-user
+  default_metadata:
+    source: mem0_store_demo
+  local_config:
+    vector_store:
+      provider: chroma
+      config:
+        collection_name: soul_speak_memories
+        path: ../llm/memory/mem0_demo_data/chroma
+    llm:
+      provider: deepseek
+      config:
+        model: deepseek-chat
+        api_key: null
+        temperature: 0.0
+        deepseek_base_url: https://api.deepseek.com
+    embedder:
+      provider: lmstudio
+      config:
+        model: text-embedding-qwen3-embedding-4b
+        lmstudio_base_url: http://127.0.0.1:1234/v1
+    history_db_path: ../llm/memory/mem0_demo_data/history.db
+    search_timeout: 5.0
