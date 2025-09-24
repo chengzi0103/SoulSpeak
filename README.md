@@ -1,3 +1,5 @@
+## 🆕 近期更新（2025-09-24）
+
 # 🪐 SoulSpeak: The Empathetic LLM Voice Companion
 
 
@@ -117,6 +119,12 @@
 > "We're building an LLM that feels like a human presence — one that listens, speaks, feels, and connects."
 
 SoulSpeak is not just an experiment. It is our vision for a future where **LLMs become emotionally resonant companions**, not just tools. We want to **give people someone to talk to, someone who remembers, someone who cares** — even if it's not human.
+
+---
+
+- ⚙️ **FastMCP 集成**：新增 `soulspeak-tools` 服务，提供 30+ 本地工具（文件、系统、网络、HTTP 等），可以按需在 `conf/llm/gpt.yaml` 中开启或关闭。
+- 🧠 **Mem0 记忆增强**：本地模式默认启用，支持 DeepSeek + LM Studio 嵌入组合，记忆检索与写入走 Ray Actor，聊天会自动回忆用户偏好。
+- 🔌 **原生客户端工具调用**：`openai_native.py` 原生对话流已支持 MCP 工具函数调用，对话中可直接请求系统信息、网络诊断等能力。
 
 This isn’t Alexa.
 This isn’t ChatGPT.
