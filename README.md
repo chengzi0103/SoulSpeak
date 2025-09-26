@@ -1,5 +1,6 @@
 ## 🆕 近期更新（2025-09-24）
 
+- 🤖 **任务调度演进计划**：拟采用 “Emilia（前端）→ 调度 LLM (Orchestrator) → 多执行器” 的三层架构。Emilia 专注对话，通过工具调用调度 LLM 生成计划，再由调度 LLM 写入任务系统并驱动执行器（沙箱、宿主脚本等）。
 # 🪐 SoulSpeak: The Empathetic LLM Voice Companion
 
 

@@ -48,6 +48,7 @@ langchain
 langchain-mcp-adapters
 langgraph
 agno
+duckdb
 fastmcp
 httpx
 psutil

@@ -21,16 +21,12 @@ def setup_audio_stream():
     print(f"[Client] Audio device SR={sr}Hz, channels={ch}")
     return sr, ch
 
-async def tts_pipeline(user_input: str, interrupt_event: asyncio.Event = None):
-    """
-    接收用户指令并进行 TTS 合成。
-    如果 interrupt_event 被 set()，则在合成前或合成中立刻中断并退出。
-    """
-    # 1. 文本切句
-    sentences = await generate_emilia_tagged(user_input)
-    print("[LLM] Sentences:", sentences)
+async def play_sentences(sentences, interrupt_event: asyncio.Event | None = None):
+    """Stream already-prepared sentences to the TTS websocket and play locally."""
+    if not sentences:
+        print("[TTS] No sentences to synthesize.")
+        return
 
-    # 2. 准备播放流
     device_sr, channels = setup_audio_stream()
     stream = sd.OutputStream(
         samplerate=device_sr,
@@ -100,6 +96,16 @@ async def tts_pipeline(user_input: str, interrupt_event: asyncio.Event = None):
             stream.close()
         except:
             pass
+
+
+async def tts_pipeline(user_input: str, interrupt_event: asyncio.Event | None = None):
+    """
+    接收用户指令并进行 TTS 合成。
+    如果 interrupt_event 被 set()，则在合成前或合成中立刻中断并退出。
+    """
+    sentences = await generate_emilia_tagged(user_input)
+    print("[LLM] Sentences:", sentences)
+    await play_sentences(sentences, interrupt_event)
 
 async def main():
     load_dotenv()
