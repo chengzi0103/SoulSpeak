@@ -5,6 +5,4 @@ data/**
 ./**/.env.secret
 ./**/.db
 .env
-*.egg-info
-*.idea
-soul_speak/llm/memory/mem0_demo_data/
+.env.secret

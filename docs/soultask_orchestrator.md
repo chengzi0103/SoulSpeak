@@ -52,6 +52,7 @@ graph LR
 | Executor | 适用任务 | 行为 |
 | --- | --- | --- |
 | ReminderExecutor | `reminder` / `notification` | 到点调用 `play_sentences` 或其他通知渠道 |
+| LLMExecutor | `llm` / `plan_and_execute` / `qa` | 基于模板渲染提示、调用 LLM 代理，记录 prompt/响应/指标，可配置输出过滤与重试 |
 | SandboxExecutor | `run_code` / `data_analysis` | 通过 gVisor/Docker+Jupyter 执行代码，返回 stdout/图像 |
 | HostExecutor | `install_package` / 系统操作 | 需要人工确认，使用白名单命令或模板化脚本执行，严格记录结果 |
 | AgentExecutor | `plan_and_execute` / 复杂流程 | 触发子 LLM + Sandbox 的多步执行（例如生成计划、逐步运行、验证） |
@@ -178,7 +179,8 @@ sequenceDiagram
 | --- | --- | --- | --- |
 | 1 | 设计 TaskStore 与任务模型 | ✅ | 定义 tasks/task_logs 结构，封装 CRUD 与日志接口 |
 | 2 | 实现 ReminderExecutor + SandboxExecutor | - | 验证基础闭环（任务入库 → 执行 → 写回）|
-| 3 | 接入 HostExecutor（需人工确认） | - | 支持高权限任务，加入白名单与确认流程 |
+| 3 | 接入 HostExecutor（需人工确认） | ✅ | `host_executor.py` 提供白名单控制 + stdout/stderr 日志 |
+| 3.5 | 强化 LLMExecutor | ✅ | 支持模板渲染、参数配置、输出过滤、执行日志追踪 |
 | 4 | 集成 AgentExecutor（多步 LLM 执行） | - | 处理复杂任务/规划，多轮执行 |
 | 5 | 调度器 + 工具一体化 | - | APScheduler/Huey 等调度 + FastMCP 工具，让 Emilia/Orchestrator 调用 |
 | 6 | 前端任务面板（可选） | - | 提供任务列表/确认/日志查看 UI |
@@ -200,3 +202,45 @@ sequenceDiagram
   "updated_at": "2025-01-08T12:05:33+08:00"
 }
 ```
+
+## 11. 示例任务（宿主机命令）
+
+```json
+{
+  "id": "host-command-2025-01-08-21",
+  "type": "host_command",
+  "status": "pending_manual",
+  "manual_required": true,
+  "payload": {
+    "command": ["/usr/bin/python3", "-c", "print('hello sto')"],
+    "timeout": 10,
+    "env": {"EXAMPLE": "1"}
+  }
+}
+```
+
+> HostExecutor 会校验 `allowed_commands` 白名单，并自动将 stdout/stderr 附加到任务日志。
+
+## 12. 示例任务（LLM 执行）
+
+```json
+{
+  "id": "llm-task-2025-01-08-21",
+  "type": "plan_and_execute",
+  "status": "pending",
+  "payload": {
+    "prompt": "帮我在晚上9点提醒喝水",
+    "context": "当前日期：2025-01-08",
+    "conversation": [
+      {"role": "user", "content": "我总是忘记喝水"}
+    ],
+    "llm_params": {
+      "temperature": 0.2
+    }
+  }
+}
+```
+
+> LLMExecutor 会渲染模板、调用代理并将 prompt/响应摘要、token 用量等写入任务日志。
+
+LLMExecutor 从任务表中拉取 `pending` 任务后，会先通过 LLM 生成执行计划（包含步骤、工具、参数），随后逐步创建子任务并调用对应工具。每个步骤的 `tool_requested` / `plan_step_*` / `tool_completed` 事件都会写入日志；若某一步失败，会记下错误并将父任务标记为 `failed` 或 `blocked`，方便后续排查或重试。

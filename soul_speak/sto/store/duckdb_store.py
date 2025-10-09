@@ -18,6 +18,7 @@ class DuckDBTaskStore:
             base.mkdir(parents=True, exist_ok=True)
             db_path = base / "sto_tasks.duckdb"
         self.db_path = Path(db_path)
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.con = duckdb.connect(str(self.db_path))
         self._init_schema()
 
@@ -47,10 +48,18 @@ class DuckDBTaskStore:
                 task_id TEXT,
                 event TEXT,
                 message TEXT,
-                timestamp TIMESTAMP
+                timestamp TIMESTAMP,
+                details TEXT
             )
             """
         )
+        self._ensure_log_schema()
+
+    def _ensure_log_schema(self) -> None:
+        info = self.con.execute("PRAGMA table_info('task_logs')").fetchall()
+        columns = {row[1] for row in info}
+        if "details" not in columns:
+            self.con.execute("ALTER TABLE task_logs ADD COLUMN details TEXT")
 
     # ---- helpers ----
     @staticmethod
@@ -59,7 +68,11 @@ class DuckDBTaskStore:
 
     @staticmethod
     def _str_to_dt(value: Optional[str]) -> Optional[datetime]:
-        return datetime.fromisoformat(value) if value else None
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value
+        return datetime.fromisoformat(str(value))
 
     @staticmethod
     def _status_from_str(value: str) -> TaskStatus:
@@ -98,7 +111,14 @@ class DuckDBTaskStore:
                 task.confirmation_note,
             ),
         )
-        self.append_log(TaskLog(task_id=task.id, event="created", message=json.dumps(task.payload, ensure_ascii=False)))
+        self.append_log(
+            TaskLog(
+                task_id=task.id,
+                event="created",
+                message="task created",
+                details={"payload": task.payload},
+            )
+        )
 
     def get_task(self, task_id: str) -> Optional[Task]:
         cur = self.con.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
@@ -146,16 +166,34 @@ class DuckDBTaskStore:
 
     def append_log(self, log: TaskLog) -> None:
         self.con.execute(
-            "INSERT INTO task_logs (task_id, event, message, timestamp) VALUES (?, ?, ?, ?)",
-            (log.task_id, log.event, log.message, self._dt_to_str(log.timestamp)),
+            "INSERT INTO task_logs (task_id, event, message, timestamp, details) VALUES (?, ?, ?, ?, ?)",
+            (
+                log.task_id,
+                log.event,
+                log.message,
+                self._dt_to_str(log.timestamp),
+                json.dumps(log.details, ensure_ascii=False) if log.details is not None else None,
+            ),
         )
 
     def list_logs(self, task_id: str) -> List[TaskLog]:
         rows = self.con.execute(
-            "SELECT task_id, event, message, timestamp FROM task_logs WHERE task_id = ? ORDER BY timestamp",
+            "SELECT task_id, event, message, timestamp, details FROM task_logs WHERE task_id = ? ORDER BY timestamp",
             (task_id,),
         ).fetchall()
-        return [TaskLog(task_id=row[0], event=row[1], message=row[2], timestamp=self._str_to_dt(row[3]) or datetime.utcnow()) for row in rows]
+        logs: List[TaskLog] = []
+        for row in rows:
+            details = json.loads(row[4]) if len(row) > 4 and row[4] else None
+            logs.append(
+                TaskLog(
+                    task_id=row[0],
+                    event=row[1],
+                    message=row[2],
+                    timestamp=self._str_to_dt(row[3]) or datetime.utcnow(),
+                    details=details,
+                )
+            )
+        return logs
 
     # ---- internal ----
     def _row_to_task(self, row) -> Task:

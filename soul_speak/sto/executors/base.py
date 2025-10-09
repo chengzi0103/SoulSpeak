@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import abc
-from typing import Optional
+from datetime import datetime
+from typing import Optional, Dict, Any
 
 from soul_speak.sto.models import Task, TaskLog, TaskStatus
 from soul_speak.sto.store.interface import TaskStoreProtocol
@@ -21,18 +22,39 @@ class Executor(abc.ABC):
 
     async def _mark_running(self, task: Task, store: TaskStoreProtocol) -> None:
         task.status = TaskStatus.RUNNING
+        task.executed_at = datetime.utcnow()
         store.update_task(task)
-        store.append_log(TaskLog(task_id=task.id, event="running", message="task started"))
+        self._log_event(store, task, "running", "task started")
 
     async def _finish_success(self, task: Task, store: TaskStoreProtocol, result: Optional[str] = None) -> None:
         task.status = TaskStatus.SUCCESS
         if result:
-            task.result = {"message": result}
+            if task.result is None:
+                task.result = {"message": result}
+            else:
+                task.result.setdefault("message", result)
         store.update_task(task)
-        store.append_log(TaskLog(task_id=task.id, event="success", message=result or "ok"))
+        self._log_event(store, task, "success", result or "ok")
 
     async def _finish_failed(self, task: Task, store: TaskStoreProtocol, error: str) -> None:
         task.status = TaskStatus.FAILED
         task.error = {"error": error}
         store.update_task(task)
-        store.append_log(TaskLog(task_id=task.id, event="failed", message=error))
+        self._log_event(store, task, "failed", error)
+
+    def _log_event(
+        self,
+        store: TaskStoreProtocol,
+        task: Task,
+        event: str,
+        message: str,
+        details: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        store.append_log(
+            TaskLog(
+                task_id=task.id,
+                event=event,
+                message=message,
+                details=details,
+            )
+        )

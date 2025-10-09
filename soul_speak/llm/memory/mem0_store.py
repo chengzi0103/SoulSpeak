@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Mapping, Sequence
 from typing import Any, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
-
+import os
 from attrs import define, field
 
 if TYPE_CHECKING:  # pragma: no cover - imported for typing only
@@ -43,7 +43,8 @@ class Mem0MemoryStore:
         mode = self.mode.lower().strip()
         if mode not in {"cloud", "local"}:
             raise ValueError("mode must be either 'cloud' or 'local'")
-
+        os.environ.setdefault("NO_PROXY", "127.0.0.1,localhost")
+        os.environ.setdefault("no_proxy", "127.0.0.1,localhost")
         if mode == "cloud":
             try:
                 from mem0 import MemoryClient

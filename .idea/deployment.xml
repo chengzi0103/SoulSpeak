@@ -1,19 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="chengzi@10.100.1.111:22 password (2)" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="remote_gpu" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
     <option name="confirmBeforeUploading" value="false" />
     <serverData>
-      <paths name="chengzi@10.100.1.111:22 password">
+      <paths name="remote_gpu">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/chengzi/projects/pycharm-tmp" local="$PROJECT_DIR$" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="chengzi@10.100.1.111:22 password (2)">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/home/chengzi/projects/pycharm-tmp" local="$PROJECT_DIR$" />
+            <mapping deploy="/home/chenzi/project/cc_local" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

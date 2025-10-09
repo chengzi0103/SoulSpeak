@@ -40,6 +40,7 @@ class TaskLog:
     event: str
     message: str
     timestamp: datetime = field(default_factory=datetime.utcnow)
+    details: Optional[Dict[str, Any]] = None
 
 
 __all__ = [

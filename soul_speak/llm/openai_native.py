@@ -97,6 +97,7 @@ class OpenAINativeAgent:
     tools_initialized: bool = field(init=False, default=False)
     tool_lock: asyncio.Lock = field(init=False, repr=False)
     mcp_manager: Optional[Any] = field(init=False, default=None, repr=False)
+    ray_initialized_here: bool = field(init=False, default=False, repr=False)
 
     def __attrs_post_init__(self) -> None:
         self._load_env()
@@ -229,6 +230,7 @@ class OpenAINativeAgent:
         try:
             if not ray.is_initialized():
                 ray.init(ignore_reinit_error=True, log_to_driver=False)
+                self.ray_initialized_here = True
             self.memory_actor = Mem0MemoryActor.remote(store_kwargs)
             self.memory_enabled = True
             logger.info("Mem0 记忆已启用 (Ray actor)")
@@ -473,6 +475,35 @@ class OpenAINativeAgent:
         )
 
         return content
+
+    async def shutdown(self) -> None:
+        if self.mcp_manager:
+            try:
+                await self.mcp_manager.shutdown()
+            except Exception:
+                logger.exception("关闭 MCP 管理器失败")
+            finally:
+                self.mcp_manager = None
+                self.tool_specs = []
+                self.tool_map = {}
+                self.tools_initialized = False
+
+        if self.memory_actor is not None:
+            try:
+                ray.kill(self.memory_actor)
+            except Exception:
+                logger.warning("释放记忆 actor 失败", exc_info=True)
+            finally:
+                self.memory_actor = None
+                self.memory_enabled = False
+
+        if self.ray_initialized_here and ray.is_initialized():
+            try:
+                ray.shutdown()
+            except Exception:
+                logger.warning("关闭 Ray 失败", exc_info=True)
+            finally:
+                self.ray_initialized_here = False
 
     def reset(self) -> None:
         self.chat_history.clear()

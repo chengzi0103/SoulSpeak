@@ -18,7 +18,14 @@ class MemoryTaskStore:
             if task.id in self._tasks:
                 raise ValueError(f"Task {task.id} already exists")
             self._tasks[task.id] = task
-            self._logs.append(TaskLog(task_id=task.id, event="created", message=str(task.payload)))
+        self._logs.append(
+            TaskLog(
+                task_id=task.id,
+                event="created",
+                message="task created",
+                details={"payload": task.payload},
+            )
+        )
 
     def get_task(self, task_id: str) -> Optional[Task]:
         with self._lock:
@@ -33,7 +40,13 @@ class MemoryTaskStore:
             if task.id not in self._tasks:
                 raise KeyError(f"Task {task.id} not found")
             self._tasks[task.id] = task
-            self._logs.append(TaskLog(task_id=task.id, event="updated", message=task.status.value))
+            self._logs.append(
+                TaskLog(
+                    task_id=task.id,
+                    event="updated",
+                    message=f"status -> {task.status.value}",
+                )
+            )
 
     def append_log(self, log: TaskLog) -> None:
         with self._lock:

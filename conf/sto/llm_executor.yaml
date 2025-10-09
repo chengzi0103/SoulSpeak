@@ -1,0 +1,80 @@
+defaults:
+  system_prompt: |
+    你是 SoulSpeak 的执行助手，需要根据任务要求调用工具或生成答案，输出必须清晰、可靠，并遵守安全策略。
+  user_template: |
+    {context_block}
+    {conversation_block}
+    ### 当前任务
+    {prompt}
+  params:
+    temperature: 0.3
+    max_tokens: 800
+    top_p: 1.0
+    presence_penalty: 0.0
+    frequency_penalty: 0.0
+  output_guidelines: |
+    - 使用中文回答，除非用户明确要求其他语言。
+    - 回答需给出关键结论与必要的步骤或建议。
+    - 如果缺失信息，应明确指出并请求补充。
+  planner_instructions: |
+    请根据上述任务生成执行计划，仅输出 JSON 字符串，不要包含其他文字。格式必须为：
+    {
+      "plan": [
+        {
+          "id": "step-1",
+          "task_type": "host_command" 或其他工具名称,
+          "description": "中文描述",
+          "payload": { "command": ["brew", "install", "ffmpeg"] 等参数 }
+        }
+      ],
+      "final_summary": "任务完成后的简要总结"
+    }
+    - 所有步骤按顺序排列，必要时给出安全提示。
+    - 如果无法执行，应返回空数组并在 final_summary 中说明原因。
+  types:
+  llm:
+    description: 通用执行任务。
+  plan_and_execute:
+    system_prompt: |
+      你是 SoulSpeak 的任务执行助手，需要对用户目标给出一步到位的处理或明确后续操作建议。
+    user_template: |
+      {context_block}
+      {conversation_block}
+      ### 任务说明
+      {prompt}
+
+      如需操作工具，请给出即将执行的命令或步骤，并说明目的。
+    params:
+      temperature: 0.2
+      max_tokens: 1200
+    output_guidelines: |
+      - 如果能够直接解决，请提供具体输出。
+      - 如果需要进一步操作，列出清晰步骤和所需工具。
+      - 标明潜在风险或注意事项。
+    planner_instructions: |
+      请输出 JSON 计划，包含要调用的工具及参数，仅返回 JSON，不要添加额外文本。例如：
+      {
+        "plan": [
+          {
+            "id": "step-1",
+            "task_type": "host_command",
+            "description": "使用 brew 安装 ffmpeg",
+            "payload": {"command": ["brew", "install", "ffmpeg"], "timeout": 600}
+          }
+        ],
+        "final_summary": "安装成功后向用户反馈。"
+      }
+      如果需要用户确认或存在风险，请在 description 中写明。
+  qa:
+    system_prompt: |
+      你是 SoulSpeak 的知识助手，需要结合上下文信息准确回答问题。
+    user_template: |
+      {context_block}
+      ### 问题
+      {prompt}
+    params:
+      temperature: 0.1
+      max_tokens: 600
+    output_guidelines: |
+      - 优先基于上下文回答，并引用关键句。
+      - 若无法回答，请坦诚说明。
