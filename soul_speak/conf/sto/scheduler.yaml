@@ -1,0 +1,41 @@
+poll_interval: 1.0
+max_concurrent: 4
+auto_start: true
+
+store:
+  kind: duckdb
+  path: ${hydra:runtime.cwd}/data/sto_tasks.duckdb
+
+executors:
+  host:
+    enabled: true
+    allowed_commands:
+      - date
+      - /bin/date
+    base_env: {}
+  sandbox:
+    enabled: false
+    command:
+      - ${hydra:runtime.python}
+      - ${hydra:runtime.cwd}/scripts/sandbox_runner.py
+    allowed_paths:
+      - ${hydra:runtime.cwd}/scripts
+    default_timeout: 120
+  reminder:
+    enabled: true
+  system_usage:
+    enabled: true
+  llm:
+    enabled: true
+    retry_limit: 1
+    supported_types:
+      - plan_and_execute
+      - llm
+      - qa
+  agent:
+    enabled: false
+    supported_types:
+      - agent_plan
+    max_steps: 25
+    allowed_commands:
+      - ${hydra:runtime.python}

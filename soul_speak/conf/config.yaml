@@ -4,10 +4,10 @@ defaults:
   - tts: cosy_voice2
   - llm: gpt
   - mcp: firecrawl
+  - sto: scheduler
   - globals
   - secrets
 
 # 通用设置（如日志、设备等）
 log_level: INFO
 device: cuda
-

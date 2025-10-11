@@ -26,6 +26,7 @@ import time
 import uuid
 import zipfile
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -45,6 +46,9 @@ try:  # pragma: no cover - fastmcp might be absent while building assets
     from fastmcp import FastMCP
 except Exception:  # pragma: no cover
     FastMCP = None
+
+from soul_speak.sto.models import Task, TaskStatus
+from soul_speak.sto.store.duckdb_store import DuckDBTaskStore
 
 BASE_DIR = Path(os.getenv("SOULSPEAK_WORKSPACE", Path.cwd())).resolve()
 
@@ -1035,6 +1039,286 @@ async def process_inspector(
             "total_memory_mb": round(aggregate_memory, 2),
             "processes": matched,
         }
+
+    return await _to_thread(_impl)
+
+
+@_register_tool(
+    name="sto_schedule_task",
+    description="Create or update a SoulTask Orchestrator task in DuckDB for automated execution.",
+    returns="Dictionary summarizing the scheduled task (id, action, next run).",
+)
+async def sto_schedule_task(
+    task_id: str,
+    task_type: str,
+    payload: str,
+    scheduled_for: Optional[str] = None,
+    delay_seconds: Optional[float] = None,
+    interval_seconds: Optional[float] = None,
+    manual_required: bool = False,
+    db_path: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Upsert a task so the TaskScheduler can execute it automatically."""
+
+    def _parse_bool(value: Any) -> bool:
+        if isinstance(value, bool):
+            return value
+        if value is None:
+            return False
+        if isinstance(value, (int, float)):
+            return value != 0
+        if isinstance(value, str):
+            return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+        return bool(value)
+
+    def _parse_float(value: Optional[float]) -> Optional[float]:
+        if value is None:
+            return None
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            raise ValueError("interval_seconds and delay_seconds must be numeric") from None
+
+    def _parse_datetime(value: Optional[str]) -> Optional[datetime]:
+        if value is None:
+            return None
+        text = value.strip()
+        if not text:
+            return None
+        try:
+            return datetime.fromisoformat(text)
+        except ValueError as exc:
+            raise ValueError(f"scheduled_for must be ISO 8601 datetime, got '{value}'") from exc
+
+    def _impl() -> Dict[str, Any]:
+        now = datetime.utcnow()
+        try:
+            payload_dict = json.loads(payload) if payload else {}
+            if not isinstance(payload_dict, dict):
+                raise ValueError("payload must decode to an object/dict")
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"payload must be valid JSON: {exc}") from exc
+
+        interval_val = _parse_float(interval_seconds)
+        if interval_val is not None:
+            payload_dict["interval_seconds"] = interval_val
+
+        delay_val = _parse_float(delay_seconds)
+        scheduled_dt = _parse_datetime(scheduled_for)
+        if scheduled_dt is None:
+            if delay_val is not None and delay_val >= 0:
+                scheduled_dt = now + timedelta(seconds=delay_val)
+            else:
+                scheduled_dt = now
+
+        manual_flag = _parse_bool(manual_required)
+        store = DuckDBTaskStore(Path(db_path)) if db_path else DuckDBTaskStore()
+        action = "created"
+
+        try:
+            existing = store.get_task(task_id)
+            if existing:
+                existing.type = task_type
+                existing.payload = payload_dict
+                existing.status = TaskStatus.PENDING
+                existing.manual_required = manual_flag
+                existing.scheduled_for = scheduled_dt
+                existing.error = None
+                existing.result = None
+                existing.attempts = 0
+                store.update_task(existing)
+                action = "updated"
+            else:
+                task = Task(
+                    id=task_id,
+                    type=task_type,
+                    payload=payload_dict,
+                    status=TaskStatus.PENDING,
+                    manual_required=manual_flag,
+                    scheduled_for=scheduled_dt,
+                )
+                store.create_task(task)
+        finally:
+            try:
+                store.con.close()
+            except Exception:
+                pass
+
+        return {
+            "task_id": task_id,
+            "action": action,
+            "task_type": task_type,
+            "scheduled_for": scheduled_dt.isoformat(),
+            "interval_seconds": payload_dict.get("interval_seconds"),
+            "manual_required": manual_flag,
+        }
+
+    return await _to_thread(_impl)
+
+
+@_register_tool(
+    name="sto_schedule_agent_plan",
+    description="Schedule an agent_plan task with structured steps for AgentExecutor to replay.",
+    returns="Dictionary summarizing the scheduled agent_plan task.",
+)
+async def sto_schedule_agent_plan(
+    task_id: str,
+    steps: str,
+    summary: Optional[str] = None,
+    env: Optional[str] = None,
+    scheduled_for: Optional[str] = None,
+    delay_seconds: Optional[float] = None,
+    manual_required: bool = False,
+    interval_seconds: Optional[float] = None,
+    db_path: Optional[str] = None,
+) -> Dict[str, Any]:
+    try:
+        decoded_steps = json.loads(steps)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"steps must be valid JSON: {exc}") from exc
+
+    if not isinstance(decoded_steps, list):
+        raise ValueError("steps must decode to a JSON array")
+
+    normalised_steps: List[Dict[str, Any]] = []
+    for index, raw_step in enumerate(decoded_steps, start=1):
+        if not isinstance(raw_step, dict):
+            raise ValueError(f"step {index} must be an object")
+        step_type = raw_step.get("type") or raw_step.get("step_type") or raw_step.get("kind")
+        if not step_type:
+            raise ValueError(f"step {index} is missing 'type'")
+        normalised = dict(raw_step)
+        normalised["type"] = str(step_type)
+        normalised_steps.append(normalised)
+
+    payload: Dict[str, Any] = {"plan": normalised_steps}
+    if summary:
+        payload["summary"] = summary
+
+    if env:
+        try:
+            env_obj = json.loads(env)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"env must be valid JSON mapping: {exc}") from exc
+        if not isinstance(env_obj, dict):
+            raise ValueError("env must decode to an object/mapping")
+        payload["env"] = env_obj
+
+    return await sto_schedule_task(
+        task_id=task_id,
+        task_type="agent_plan",
+        payload=json.dumps(payload, ensure_ascii=False),
+        scheduled_for=scheduled_for,
+        delay_seconds=delay_seconds,
+        interval_seconds=interval_seconds,
+        manual_required=manual_required,
+        db_path=db_path,
+    )
+
+
+@_register_tool(
+    name="sto_list_tasks",
+    description="List STO tasks filtered by status or ID prefix.",
+    returns="Dictionary containing task summaries.",
+)
+async def sto_list_tasks(
+    status: Optional[str] = None,
+    prefix: Optional[str] = None,
+    limit: int = 20,
+    db_path: Optional[str] = None,
+) -> Dict[str, Any]:
+    status_filter = status.lower() if status else None
+    prefix_filter = prefix or ""
+    limit = max(1, min(limit, 200))
+
+    def _impl() -> Dict[str, Any]:
+        store = DuckDBTaskStore(Path(db_path)) if db_path else DuckDBTaskStore()
+        try:
+            tasks = store.list_tasks()
+            summaries: List[Dict[str, Any]] = []
+            for task in tasks:
+                if status_filter and task.status.value != status_filter:
+                    continue
+                if prefix_filter and not task.id.startswith(prefix_filter):
+                    continue
+                summaries.append(
+                    {
+                        "id": task.id,
+                        "type": task.type,
+                        "status": task.status.value,
+                        "manual_required": task.manual_required,
+                        "scheduled_for": task.scheduled_for.isoformat() if task.scheduled_for else None,
+                        "updated_at": task.updated_at.isoformat(),
+                        "attempts": task.attempts,
+                    }
+                )
+                if len(summaries) >= limit:
+                    break
+            return {"count": len(summaries), "tasks": summaries}
+        finally:
+            try:
+                store.con.close()
+            except Exception:
+                pass
+
+    return await _to_thread(_impl)
+
+
+@_register_tool(
+    name="sto_task_detail",
+    description="Fetch a single STO task and optional execution logs.",
+    returns="Dictionary containing task detail and logs.",
+)
+async def sto_task_detail(
+    task_id: str,
+    include_logs: bool = True,
+    log_limit: int = 50,
+    db_path: Optional[str] = None,
+) -> Dict[str, Any]:
+    if not task_id:
+        raise ValueError("task_id is required")
+    log_limit = max(1, min(log_limit, 200))
+
+    def _impl() -> Dict[str, Any]:
+        store = DuckDBTaskStore(Path(db_path)) if db_path else DuckDBTaskStore()
+        try:
+            task = store.get_task(task_id)
+            if task is None:
+                return {"task": None, "logs": []}
+
+            task_data = {
+                "id": task.id,
+                "type": task.type,
+                "status": task.status.value,
+                "manual_required": task.manual_required,
+                "scheduled_for": task.scheduled_for.isoformat() if task.scheduled_for else None,
+                "created_at": task.created_at.isoformat(),
+                "updated_at": task.updated_at.isoformat(),
+                "executed_at": task.executed_at.isoformat() if task.executed_at else None,
+                "payload": task.payload,
+                "result": task.result,
+                "error": task.error,
+                "attempts": task.attempts,
+            }
+
+            logs: List[Dict[str, Any]] = []
+            if include_logs:
+                for log in store.list_logs(task_id)[-log_limit:]:
+                    logs.append(
+                        {
+                            "event": log.event,
+                            "message": log.message,
+                            "timestamp": log.timestamp.isoformat(),
+                            "details": log.details,
+                        }
+                    )
+
+            return {"task": task_data, "logs": logs}
+        finally:
+            try:
+                store.con.close()
+            except Exception:
+                pass
 
     return await _to_thread(_impl)
 
