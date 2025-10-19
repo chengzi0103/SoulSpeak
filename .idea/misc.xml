@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="soul-speak" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="SoulSpeak" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="soul-speak" project-jdk-type="Python SDK" />
 </project>

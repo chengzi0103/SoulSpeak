@@ -9,6 +9,8 @@ Create a Python 3.10 environment, then install dependencies: `python -m venv .ve
 ## Coding Style & Naming Conventions
 All Python modules use 4-space indentation, `utf-8` encoding, and `snake_case` filenames. Keep public functions typed and documented with concise docstrings; configuration keys mirror lower-case-with-underscores used in existing YAML. Follow the existing module layout by co-locating adapters with their domain (e.g., ASR clients stay in `soul_speak/asr/`). Run `python -m compileall soul_speak` or `python -m py_compile ...` if you need a quick syntax check during CI bring-up.
 
+- SoulTask Orchestrator (`soul_speak/sto/`) 中的类统一使用 `attrs.define`（特殊结构如 `Enum` 与协议接口除外），保持字段通过 attrs 管理，便于后续扩展。
+
 ## Testing Guidelines
 Pytest is the standard test runner (`pytest`), with coverage tooling available via `pytest --cov=soul_speak --cov-report=term`). Add new suites under a top-level `tests/` package; name files `test_<feature>.py` and use fixtures for external services so runs stay offline by default. For streaming flows, prefer unit tests around protocol helpers and mock WebSocket clients rather than full end-to-end audio pipelines.
 

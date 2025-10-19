@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Mapping, Optional, Sequence, Tuple
 
 import yaml
+from attrs import define
 
 from soul_speak.sto.executors.base import Executor
 from soul_speak.sto.models import Task, TaskStatus
@@ -51,6 +52,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
 }
 
 
+@define(init=False, slots=False)
 class LLMExecutor(Executor):
     """Executor that relies on an async LLM agent to produce a textual result.
 

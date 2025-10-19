@@ -1,12 +1,14 @@
 """Executor that runs whitelisted host OS commands."""
 from __future__ import annotations
 
-import contextlib
 import asyncio
+import contextlib
 import os
 import shlex
 from asyncio.subprocess import PIPE
 from typing import Iterable, Mapping, Optional, Sequence, Union
+
+from attrs import define, field
 
 from soul_speak.sto.executors.base import Executor
 from soul_speak.sto.models import Task, TaskLog
@@ -16,6 +18,7 @@ from soul_speak.sto.store.interface import TaskStoreProtocol
 CommandType = Union[str, Sequence[str]]
 
 
+@define(slots=False)
 class HostExecutor(Executor):
     """Executor that executes commands on the host operating system.
 
@@ -34,20 +37,18 @@ class HostExecutor(Executor):
     ``allowed_commands`` so only selected entrypoints are accepted.
     """
 
-    def __init__(
-        self,
-        *,
-        supported_types: Optional[Iterable[str]] = None,
-        allowed_commands: Optional[Iterable[str]] = None,
-        base_env: Optional[Mapping[str, str]] = None,
-        stdout_log_limit: int = 4000,
-        stderr_log_limit: int = 4000,
-    ) -> None:
-        self.supported_types = set(supported_types or {"host_command"})
-        self.allowed_commands = set(allowed_commands or []) or None
-        self.base_env = dict(base_env) if base_env else None
-        self.stdout_log_limit = stdout_log_limit
-        self.stderr_log_limit = stderr_log_limit
+    supported_types: Iterable[str] = field(factory=lambda: {"host_command"})
+    allowed_commands: Optional[Iterable[str]] = None
+    base_env: Optional[Mapping[str, str]] = None
+    stdout_log_limit: int = 4000
+    stderr_log_limit: int = 4000
+
+    def __attrs_post_init__(self) -> None:
+        supported = set(self.supported_types or {"host_command"})
+        self.supported_types = supported
+        allowed = set(self.allowed_commands or [])
+        self.allowed_commands = allowed or None
+        self.base_env = dict(self.base_env) if self.base_env else None
 
     def can_handle(self, task: Task) -> bool:
         return task.type in self.supported_types

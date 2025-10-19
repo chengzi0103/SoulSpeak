@@ -6,6 +6,8 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from attrs import define, field
+
 from soul_speak.sto.executors.base import Executor
 from soul_speak.sto.executors.sandbox import SandboxExecutor
 from soul_speak.sto.executors.agent_executor import AgentExecutor
@@ -15,9 +17,9 @@ from soul_speak.sto.scheduler import TaskScheduler
 from soul_speak.sto.store.memory import MemoryTaskStore
 
 
+@define(slots=True)
 class DummySuccessExecutor(Executor):
-    def __init__(self) -> None:
-        self.supported_types = {"dummy"}
+    supported_types: set[str] = field(factory=lambda: {"dummy"})
 
     def can_handle(self, task: Task) -> bool:  # type: ignore[override]
         return task.type in self.supported_types
@@ -27,9 +29,9 @@ class DummySuccessExecutor(Executor):
         await self._finish_success(task, store, result="done")
 
 
+@define(slots=True)
 class DummyFailExecutor(Executor):
-    def __init__(self) -> None:
-        self.supported_types = {"fail"}
+    supported_types: set[str] = field(factory=lambda: {"fail"})
 
     def can_handle(self, task: Task) -> bool:  # type: ignore[override]
         return task.type in self.supported_types

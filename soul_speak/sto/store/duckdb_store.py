@@ -7,19 +7,26 @@ from pathlib import Path
 from typing import List, Optional
 
 import duckdb
+from attrs import define, field
 
 from soul_speak.sto.models import Task, TaskLog, TaskStatus
 
 
+@define(slots=False)
 class DuckDBTaskStore:
-    def __init__(self, db_path: Optional[Path] = None) -> None:
+    db_path: Optional[Path] = None
+    con: duckdb.DuckDBPyConnection = field(init=False)
+
+    def __attrs_post_init__(self) -> None:
+        db_path = self.db_path
         if db_path is None:
             base = Path(__file__).resolve().parents[2] / "data"
             base.mkdir(parents=True, exist_ok=True)
             db_path = base / "sto_tasks.duckdb"
-        self.db_path = Path(db_path)
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        self.con = duckdb.connect(str(self.db_path))
+        resolved = Path(db_path)
+        resolved.parent.mkdir(parents=True, exist_ok=True)
+        self.db_path = resolved
+        self.con = duckdb.connect(str(resolved))
         self._init_schema()
 
     def _init_schema(self) -> None:

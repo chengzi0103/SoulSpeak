@@ -72,9 +72,8 @@
   Fill them out with the right edge cases.
 -->
 
-- How does the system behave when the user interrupts playback mid-sentence and a new audio chunk arrives?
-- What happens when the streaming service exceeds the 1.2s latency target or drops the WebSocket connection?
-- How is consent enforced when memory/emotion features are disabled or redaction fails?
+- What happens when [boundary condition]?
+- How does system handle [error scenario]?
 
 ## Requirements *(mandatory)*
 
@@ -85,18 +84,16 @@
 
 ### Functional Requirements
 
-- **FR-001**: Voice loop MUST stream microphone audio to ASR and return the first spoken response in under 1.2s (record actual baseline).
-- **FR-002**: Playback MUST honour `END_OF_SPEECH` interrupts by draining buffers across ASR/LLM/TTS boundaries.
-- **FR-003**: Module integrations MUST reuse the event schema consumed by `soul_speak/mic/run_and_speak.py` or document contract changes and harness updates.
-- **FR-004**: Memory/emotion data MUST flow through configurable providers with consent flags and redaction rules defined in `conf/`.
-- **FR-005**: Observability MUST emit structured logs or metrics for latency, disconnections, and consent toggles without leaking transcripts.
-- **FR-006**: User-facing文本与语音交互默认使用中文；如需其它语言，规范中必须记录触发条件与回退方案。
-- **FR-007**: 新引入或重构的类必须使用 `from attrs import define, field` 并以 `@define` 声明字段；若无法使用 attrs，需在设计中说明例外原因。
+- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
+- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]  
+- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
+- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
+- **FR-005**: System MUST [behavior, e.g., "log all security events"]
 
 *Example of marking unclear requirements:*
 
-- **FR-008**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-009**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
+- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
 ### Key Entities *(include if feature involves data)*
 
@@ -112,7 +109,8 @@
 
 ### Measurable Outcomes
 
-- **SC-001**: [Latency metric, e.g., "Average first-response audio latency ≤ 1.2s across 10 trial runs"]
-- **SC-002**: [Reliability metric, e.g., "Playback interruption handling succeeds in 99% of simulated cuts"]
-- **SC-003**: [Consent metric, e.g., "Memory/emotion toggles correctly persist user preference across sessions"]
-- **SC-004**: [Business/experience metric, e.g., "NPS or qualitative feedback improves when emotion tagging enabled"]
+- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
+- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
+- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
+- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+

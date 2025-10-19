@@ -5,12 +5,15 @@ import asyncio
 import json
 from typing import Any, Dict
 
+from attrs import define
+
 from soul_speak.sto.executors.host_executor import HostExecutor
 from soul_speak.sto.executors.llm_executor import LLMExecutor
 from soul_speak.sto.models import Task
 from soul_speak.sto.store.memory import MemoryTaskStore
 
 
+@define(init=False, slots=True)
 class RulePlannerAgent:
     """极简规划代理：根据 natural language prompt 返回固定 JSON 计划."""
 

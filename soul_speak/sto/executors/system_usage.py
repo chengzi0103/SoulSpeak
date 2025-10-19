@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import asyncio
 import os
-from typing import Dict, Optional
+from typing import Dict
+
+from attrs import define, field
 
 try:  # psutil 提供更丰富的指标，如果缺失则使用内置信息
     import psutil  # type: ignore
@@ -17,12 +19,12 @@ from soul_speak.sto.models import Task
 from soul_speak.sto.store.interface import TaskStoreProtocol
 
 
+@define(slots=True)
 class SystemUsageExecutor(Executor):
     """Gather CPU/Memory information from the local machine."""
 
-    def __init__(self, sample_interval: float = 0.2) -> None:
-        self.sample_interval = sample_interval
-        self.supported_types = {"system_usage"}
+    sample_interval: float = 0.2
+    supported_types: set[str] = field(factory=lambda: {"system_usage"})
 
     def can_handle(self, task: Task) -> bool:
         return task.type in self.supported_types

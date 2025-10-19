@@ -3,7 +3,7 @@
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/scripts/bash/setup-plan.sh` for the execution workflow.
+**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## Summary
 
@@ -31,13 +31,7 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- ✅ Principle I: Capture current first-response latency (<1.2s goal) from `python soul_speak/mic/run_and_speak.py` or document mitigation and fallback user messaging before work starts.
-- ✅ Principle I: Explain how the change preserves interruption handling (propagating `END_OF_SPEECH` and draining buffers) across the affected modules.
-- ✅ Principle II: List the streaming contract being touched (event names, payload schema, harness path in `soul_speak/modules/`) and the Hydra overrides needed.
-- ✅ Principle III: Describe memory/emotion data handling—including consent toggles, redaction, and degraded stateless behaviour if disabled.
-- ✅ Principle IV: Define the deterministic tests and runtime monitoring you will add or update to catch latency or desynchronisation regressions.
-- ✅ Principle V: Enumerate configuration or secret changes, logging redactions, and telemetry updates required for rollout.
-- ✅ Operating Standards: Confirm user-facing outputs default to Chinese unless exceptions are documented, and any new/modified classes use `@define` / `field` from `attrs`.
+[Gates determined based on constitution file]
 
 ## Project Structure
 
@@ -108,3 +102,4 @@ directories captured above]
 |-----------|------------|-------------------------------------|
 | [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
 | [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+

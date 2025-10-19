@@ -3,15 +3,17 @@ from __future__ import annotations
 
 from typing import Dict
 
+from attrs import define, field
+
 from soul_speak.sto.executors.base import Executor
 from soul_speak.sto.models import Task
 from soul_speak.sto.store.interface import TaskStoreProtocol
 
 
+@define(slots=True)
 class ReminderExecutor(Executor):
-    def __init__(self, voices: Dict[str, str] | None = None) -> None:
-        self.voices = voices or {}
-        self.supported_types = {"reminder"}
+    voices: Dict[str, str] = field(factory=dict)
+    supported_types: set[str] = field(factory=lambda: {"reminder"})
 
     def can_handle(self, task: Task) -> bool:
         return task.type in self.supported_types

@@ -11,8 +11,6 @@ description: "Task list template for feature implementation"
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-**Constitution Hooks**: Ensure each story carries tasks for (a) recording <1.2s latency baselines, (b) updating the streaming harness and Hydra config overrides, (c) enforcing consent/redaction paths, (d) adding deterministic offline tests, (e) documenting configuration + telemetry changes, (f) validating中文交互默认输出，(g) 确认新增类采用 `@define` + `field`（attrs）。
-
 ## Format: `[ID] [P?] [Story] Description`
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
@@ -67,8 +65,6 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T007 Create base models/entities that all stories depend on
 - [ ] T008 Configure error handling and logging infrastructure
 - [ ] T009 Setup environment configuration management
-- [ ] T090 Capture baseline real-time latency using `python soul_speak/mic/run_and_speak.py` and document mitigation if >1.2s
-- [ ] T091 Update or create streaming harness in `soul_speak/modules/` for manual verification
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -250,3 +246,6 @@ With multiple developers:
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
+
+
+

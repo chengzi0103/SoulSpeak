@@ -3,43 +3,45 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime, timedelta
-from typing import Iterable, List, Optional, Sequence
+from typing import Iterable, List, Optional
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from attrs import define, field
 
 from soul_speak.sto.executors.base import Executor
 from soul_speak.sto.models import Task, TaskLog, TaskStatus
 from soul_speak.sto.store.interface import TaskStoreProtocol
 
 
+@define(slots=False)
 class TaskScheduler:
     """Periodically polls the TaskStore and dispatches due tasks to executors."""
 
-    def __init__(
-        self,
-        store: TaskStoreProtocol,
-        executors: Iterable[Executor],
-        *,
-        poll_interval: float = 1.0,
-        max_concurrent: int = 4,
-        enable_background: bool = True,
-        scheduler: Optional[AsyncIOScheduler] = None,
-    ) -> None:
-        self.store = store
-        self.executors: Sequence[Executor] = tuple(executors)
-        self.poll_interval = max(0.1, float(poll_interval))
-        self._semaphore = asyncio.Semaphore(max(1, int(max_concurrent)))
-        self._enable_background = enable_background
-        self._scheduler = scheduler if enable_background else None
-        self._job_id: Optional[str] = None
+    store: TaskStoreProtocol
+    executors: Iterable[Executor]
+    poll_interval: float = 1.0
+    max_concurrent: int = 4
+    enable_background: bool = True
+    scheduler: Optional[AsyncIOScheduler] = None
+    _semaphore: asyncio.Semaphore = field(init=False)
+    _scheduler: Optional[AsyncIOScheduler] = field(init=False)
+    _job_id: Optional[str] = field(init=False, default=None)
+    _running: bool = field(init=False, default=False)
+
+    def __attrs_post_init__(self) -> None:
+        self.executors = tuple(self.executors)
+        self.poll_interval = max(0.1, float(self.poll_interval))
+        self._semaphore = asyncio.Semaphore(max(1, int(self.max_concurrent)))
+        self._scheduler = self.scheduler if self.enable_background else None
+        self._job_id = None
         self._running = False
 
-        if self._enable_background and self._scheduler is None:
+        if self.enable_background and self._scheduler is None:
             self._scheduler = AsyncIOScheduler(timezone="UTC")
 
     def start(self) -> None:
         """Start background polling using APScheduler."""
-        if not self._enable_background:
+        if not self.enable_background:
             raise RuntimeError("Background scheduling is disabled for this TaskScheduler instance")
         if self._scheduler is None:
             raise RuntimeError("AsyncIOScheduler is not configured")
@@ -60,7 +62,7 @@ class TaskScheduler:
 
     def stop(self, wait: bool = True) -> None:
         """Stop background polling."""
-        if not self._enable_background or self._scheduler is None:
+        if not self.enable_background or self._scheduler is None:
             return
         if self._job_id and self._scheduler.get_job(self._job_id):
             self._scheduler.remove_job(self._job_id)

@@ -1,65 +1,50 @@
-<!--
-Sync Impact Report:
-Version change: 1.0.0 → 1.1.0
-Modified principles: Operating Standards → Operating Standards (新增语言与类定义要求)
-Added sections: None
-Removed sections: None
-Templates requiring updates:
-- .specify/templates/plan-template.md ✅ updated
-- .specify/templates/spec-template.md ✅ updated
-- .specify/templates/tasks-template.md ✅ updated
-Follow-up TODOs: None
--->
-
-# SoulSpeak Constitution
+# [PROJECT_NAME] Constitution
+<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
 
 ## Core Principles
 
-### I. Empathy-First Real-Time Loop
-- Voice-first features MUST keep the time from user audio to the first spoken response under 1.2s in a local dev profile when measured with `python soul_speak/mic/run_and_speak.py`; if the target cannot be met, the plan/spec MUST document the measured latency and the mitigation (fallback text, buffering, or explicit user prompt) before implementation proceeds.
-- Every playback path MUST honor user interruptions by propagating `END_OF_SPEECH` control messages across ASR, LLM, and TTS modules and by draining audio buffers immediately (see `soul_speak/mic/run_and_speak.py`); regressions require a blocking bug.
-- Generated speech MUST be chunked into emotion-aware segments (e.g., via `_split_for_tts`) capped at 80 characters unless vocoder requirements dictate otherwise, ensuring emotional cadence survives downstream streaming.
-Rationale: Empathetic presence collapses without low-latency, interruption-aware audio delivery that preserves emotional nuance.
+### [PRINCIPLE_1_NAME]
+<!-- Example: I. Library-First -->
+[PRINCIPLE_1_DESCRIPTION]
+<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
 
-### II. Composable Streaming Modules
-- ASR, LLM, and TTS integrations MUST expose WebSocket or streaming gRPC contracts that publish `event`-tagged JSON metadata and raw audio/text frames, matching the handshake consumed by `soul_speak/mic/run_and_speak.py`.
-- Module swaps MUST be controlled exclusively through Hydra configs under `conf/`; no hard-coded endpoints, credentials, or model IDs belong in runtime code.
-- Each new or altered module MUST ship with a runnable harness in `soul_speak/modules/` (or equivalent) that exercises the streaming boundary end-to-end for manual verification.
-Rationale: SoulSpeak stays adaptive only when modules remain hot-swappable through declarative contracts and tooling.
+### [PRINCIPLE_2_NAME]
+<!-- Example: II. CLI Interface -->
+[PRINCIPLE_2_DESCRIPTION]
+<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
 
-### III. Memory & Emotion With Consent
-- Long-term state MUST flow through the `soul_speak/llm/memory/` providers; persistence or retrieval MUST be gated by explicit configuration flags and redact personally identifiable content before storage.
-- Emotion recognition outputs MUST be labelled with confidence scores and classification provenance, and they CANNOT be persisted without user consent captured via config or task record.
-- When memory or emotion subsystems are disabled, the user experience MUST degrade gracefully to stateless replies without raising exceptions.
-Rationale: Trustworthy companionship depends on controllable memory and emotion features that respect consent boundaries.
+### [PRINCIPLE_3_NAME]
+<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+[PRINCIPLE_3_DESCRIPTION]
+<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
 
-### IV. Proven Real-Time Reliability
-- New features touching audio, streaming, or scheduling MUST include deterministic pytest coverage using recorded fixtures or mocked transports so they run offline; network-bound tests belong behind opt-in markers.
-- Plans/specs MUST outline how runtime monitoring (structured logs, metrics, or traces) will surface latency breaches or stream desynchronisation before shipping.
-- Bug fixes MAY bypass new tests only with an incident reference that documents why regression coverage already exists.
-Rationale: Real-time systems tolerate little slack—repeatable tests and observability keep the loop dependable.
+### [PRINCIPLE_4_NAME]
+<!-- Example: IV. Integration Testing -->
+[PRINCIPLE_4_DESCRIPTION]
+<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
 
-### V. Secure Configuration & Telemetry Discipline
-- Secrets and API tokens MUST stay out of version control; runtime code retrieves them via `.env`, `conf/secrets.yaml`, or OS environment variables, and any new key MUST be added to the onboarding docs.
-- Configuration diffs MUST enumerate expected side effects (model paths, ports, sample rates) in PR notes, and breaking changes require migration steps or roll-back instructions.
-- Logging MUST redact user identifiers and audio transcripts by default while still emitting timestamps, module IDs, and latency measurements for diagnosis.
-Rationale: A safe, observable system protects users while giving maintainers the insight needed to improve it.
+### [PRINCIPLE_5_NAME]
+<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
+[PRINCIPLE_5_DESCRIPTION]
+<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
 
-## Operating Standards
-- Target runtime is Python 3.10 with dependencies pinned through `requirements.txt`; deviations require prior approval and compatibility notes in `install.md`.
-- Default execution profiles rely on local or LAN-accessible services; features that demand public cloud endpoints MUST provide a sandboxed alternative or documented skip path.
-- Audio assets committed to the repo stay under `soul_speak/modules/` (reference use only); production prompts, transcripts, or personally identifiable data remain outside the repository.
-- Runtime代理与控制台输出在无特别说明时 MUST 使用中文与用户交互；若场景需要其他语言，必须在规划阶段记录理由与回退策略。
-- 新增或重构的类 MUST 通过 `from attrs import define, field` 并以 `@define` 声明数据模型；若无法满足，应在评审备注中给出兼容性说明。
+## [SECTION_2_NAME]
+<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
 
-## Delivery Workflow
-- Every new initiative starts with `/spec` → `/plan` → `/tasks`; skipping a stage demands explicit maintainer approval recorded in the pull request.
-- Plans MUST complete the Constitution Check before Phase 0 research begins, and reviewers block if any gate remains unresolved.
-- Pull requests MUST link to latency measurements (Principle I), streaming harness updates (Principle II), consent toggles or migration notes (Principle III), test evidence (Principle IV), and configuration summaries (Principle V) in their description.
+[SECTION_2_CONTENT]
+<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+
+## [SECTION_3_NAME]
+<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+
+[SECTION_3_CONTENT]
+<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
 
 ## Governance
-- This constitution supersedes ad-hoc guidelines; conflicting docs must be updated or annotated within the same change set.
-- Amendments require consensus from two maintainers, an updated Sync Impact Report, and propagation to dependent templates within the same pull request.
-- Version bumps follow semantic rules (Major for principle rewrites/removals, Minor for additional principles or new mandatory workflow, Patch for clarifications); each release logs measurement baselines for Principle I and any new telemetry requirements.
+<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-**Version**: 1.1.0 | **Ratified**: 2025-10-10 | **Last Amended**: 2025-10-10
+[GOVERNANCE_RULES]
+<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+
+**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->

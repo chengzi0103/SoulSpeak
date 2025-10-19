@@ -1,4 +1,5 @@
 sphinx==8.1.3
+PyYAML
 sphinx-rtd-theme==3.0.2
 pytest==8.3.5
 pytest-cov==6.0.0
@@ -16,6 +17,8 @@ cookiecutter==2.6.0
 setuptools
 openpyxl==3.1.5
 attrs<26,>=25.1.0
+duckdb-engine
+SQLAlchemy
 pathlib==1.0.1
 click
 prettytable
@@ -26,11 +29,17 @@ PyAudio
 numpy
 openai
 funasr
+ray
+mem0ai
 langchain_openai
 langchain
 langchain-mcp-adapters
 langgraph
 agno
+duckdb
+fastmcp
+httpx
+psutil
 fastapi
 uvicorn
 websockets
@@ -40,3 +49,4 @@ python-dotenv
 webrtcvad
 silero-vad
 pysilero-vad
+apscheduler

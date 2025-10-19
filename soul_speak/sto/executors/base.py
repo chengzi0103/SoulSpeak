@@ -3,12 +3,15 @@ from __future__ import annotations
 
 import abc
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
+from attrs import define
 
 from soul_speak.sto.models import Task, TaskLog, TaskStatus
 from soul_speak.sto.store.interface import TaskStoreProtocol
 
 
+@define(init=False)
 class Executor(abc.ABC):
     """Base executor interface."""
 
@@ -58,3 +61,6 @@ class Executor(abc.ABC):
                 details=details,
             )
         )
+
+
+__all__ = ["Executor"]

@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 import enum
-from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, Optional
+
+from attrs import define, field
 
 
 class TaskStatus(str, enum.Enum):
@@ -17,7 +18,7 @@ class TaskStatus(str, enum.Enum):
     CANCELLED = "cancelled"
 
 
-@dataclass
+@define(slots=True)
 class Task:
     id: str
     type: str
@@ -25,8 +26,8 @@ class Task:
     status: TaskStatus = TaskStatus.PENDING
     manual_required: bool = False
     scheduled_for: Optional[datetime] = None
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(factory=datetime.utcnow)
+    updated_at: datetime = field(factory=datetime.utcnow)
     executed_at: Optional[datetime] = None
     result: Optional[Dict[str, Any]] = None
     error: Optional[Dict[str, Any]] = None
@@ -34,12 +35,12 @@ class Task:
     confirmation_note: Optional[str] = None
 
 
-@dataclass
+@define(slots=True)
 class TaskLog:
     task_id: str
     event: str
     message: str
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(factory=datetime.utcnow)
     details: Optional[Dict[str, Any]] = None
 
 

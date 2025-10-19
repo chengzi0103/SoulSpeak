@@ -6,6 +6,8 @@ from contextlib import suppress
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from attrs import define
+
 from omegaconf import OmegaConf
 
 from soul_speak.sto.executors.host_executor import HostExecutor
@@ -31,6 +33,7 @@ def _to_dict(data: Any) -> Dict[str, Any]:
         return {}
 
 
+@define(init=False, slots=False)
 class STOSchedulerService:
     """Configure and run the STO scheduler with executors defined in Hydra config."""
 

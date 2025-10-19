@@ -4,14 +4,16 @@ from __future__ import annotations
 import threading
 from typing import Dict, List, Optional
 
+from attrs import define, field
+
 from soul_speak.sto.models import Task, TaskLog, TaskStatus
 
 
+@define(slots=True)
 class MemoryTaskStore:
-    def __init__(self) -> None:
-        self._tasks: Dict[str, Task] = {}
-        self._logs: List[TaskLog] = []
-        self._lock = threading.Lock()
+    _tasks: Dict[str, Task] = field(factory=dict, init=False)
+    _logs: List[TaskLog] = field(factory=list, init=False)
+    _lock: threading.Lock = field(factory=threading.Lock, init=False)
 
     def create_task(self, task: Task) -> None:
         with self._lock:
